@@ -5,14 +5,23 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 9000;
 const MONGODB_URI = process.env.MONGODB_URI;
-const FRONTEND_URL = process.env.FRONTEND_URL?.trim().replace(/\/$/, '');
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .trim()
+  .replace(/\/$/, '');
+const allowedOrigins = new Set([
+  FRONTEND_URL,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+]);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || origin === FRONTEND_URL) {
+      const normalizedOrigin = origin?.replace(/\/$/, '');
+
+      if (!origin || allowedOrigins.has(normalizedOrigin)) {
         return callback(null, true);
       }
 
